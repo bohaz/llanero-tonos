@@ -26,6 +26,55 @@ function normalizeFrequency(freq) {
   return freq;
 }
 
+/* =========================
+   COMPONENTE AGUJA
+   ========================= */
+function TunerNeedle({ diff }) {
+  const value =
+    diff !== null ? Math.max(-50, Math.min(50, diff * 10)) : 0;
+
+  const inTune = diff !== null && Math.abs(diff) < 1;
+
+  return (
+    <div className="w-full max-w-xs mx-auto mt-6">
+      <div className="flex justify-between text-xs text-muted-foreground mb-2">
+        <span>♭ Grave</span>
+        <span>✔</span>
+        <span>♯ Agudo</span>
+      </div>
+
+      <div className="relative h-2 bg-neutral-700 rounded-full overflow-hidden">
+        {/* centro */}
+        <div className="absolute left-1/2 top-0 h-2 w-[2px] bg-neutral-300" />
+
+        {/* aguja */}
+        <div
+          className={`absolute -top-3 h-6 w-[3px] rounded transition-all duration-150 ${
+            inTune ? "bg-green-500" : "bg-red-500"
+          }`}
+          style={{
+            left: `calc(50% + ${value}%)`,
+            transform: "translateX(-50%)",
+          }}
+        />
+      </div>
+
+      <p className="text-sm mt-3 text-center">
+        {diff === null
+          ? "Escuchando…"
+          : inTune
+          ? "Afinado ✔"
+          : diff > 0
+          ? "Muy agudo"
+          : "Muy grave"}
+      </p>
+    </div>
+  );
+}
+
+/* =========================
+   TUNER
+   ========================= */
 export default function Tuner() {
   const [isRunning, setIsRunning] = useState(false);
   const [note, setNote] = useState("--");
@@ -40,55 +89,49 @@ export default function Tuner() {
   const bufferRef = useRef(null);
 
   /* =========================
-     INICIAR AFINADOR
+     INICIAR
      ========================= */
   const startTuner = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-      },
-    });
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      });
 
-    audioContextRef.current = new (window.AudioContext ||
-      window.webkitAudioContext)();
+      audioContextRef.current = new (window.AudioContext ||
+        window.webkitAudioContext)();
 
-    // 🔑 ESTA LÍNEA ES CRÍTICA
-    if (audioContextRef.current.state === "suspended") {
-      await audioContextRef.current.resume();
+      if (audioContextRef.current.state === "suspended") {
+        await audioContextRef.current.resume();
+      }
+
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      analyserRef.current.fftSize = 2048;
+
+      sourceRef.current =
+        audioContextRef.current.createMediaStreamSource(stream);
+      sourceRef.current.connect(analyserRef.current);
+
+      bufferRef.current = new Float32Array(analyserRef.current.fftSize);
+      detectorRef.current = PitchDetector.forFloat32Array(
+        analyserRef.current.fftSize
+      );
+
+      setIsRunning(true);
+      detectPitch();
+    } catch (err) {
+      alert("No se pudo acceder al micrófono");
+      console.error(err);
     }
-
-    analyserRef.current = audioContextRef.current.createAnalyser();
-    analyserRef.current.fftSize = 2048;
-
-    sourceRef.current =
-      audioContextRef.current.createMediaStreamSource(stream);
-
-    sourceRef.current.connect(analyserRef.current);
-
-    bufferRef.current = new Float32Array(analyserRef.current.fftSize);
-
-    detectorRef.current = PitchDetector.forFloat32Array(
-      analyserRef.current.fftSize
-    );
-
-    setIsRunning(true);
-    detectPitch();
-  } catch (err) {
-    alert("No se pudo acceder al micrófono");
-    console.error(err);
-  }
-};
-
+  };
 
   /* =========================
-     DETECTAR TONO
+     DETECCIÓN
      ========================= */
   const detectPitch = () => {
-    if (!analyserRef.current) return;
-
     analyserRef.current.getFloatTimeDomainData(bufferRef.current);
 
     let [freq, clarity] = detectorRef.current.findPitch(
@@ -98,7 +141,6 @@ export default function Tuner() {
 
     if (clarity > 0.75 && freq > 50 && freq < 1200) {
       freq = normalizeFrequency(freq);
-
       setFrequency(freq.toFixed(1));
 
       let closest = NOTES[0];
@@ -124,7 +166,7 @@ export default function Tuner() {
   };
 
   /* =========================
-     DETENER AFINADOR
+     DETENER
      ========================= */
   const stopTuner = () => {
     cancelAnimationFrame(rafRef.current);
@@ -136,46 +178,40 @@ export default function Tuner() {
     setDiff(null);
   };
 
-  /* =========================
-     LIMPIEZA
-     ========================= */
-  useEffect(() => {
-    return () => stopTuner();
-  }, []);
+  useEffect(() => () => stopTuner(), []);
 
   /* =========================
      UI
      ========================= */
   return (
-    <Card className="max-w-md mx-auto mt-6">
-      <CardContent className="p-6 text-center">
-        <h2 className="text-2xl font-bold mb-4">🎧 Afinador</h2>
+    <Card className="max-w-md mx-auto mt-6 bg-neutral-900 border border-neutral-800">
+      <CardContent className="p-6 text-center text-white">
+        <h2 className="text-2xl font-bold mb-4 flex justify-center items-center gap-2">
+          🎧 Afinador
+        </h2>
 
-        <div className="text-5xl font-bold mb-2">{note}</div>
+        <div className="text-6xl font-bold mb-2">{note}</div>
 
-        <div className="text-gray-600 mb-2">
+        <div className="text-sm text-muted-foreground mb-4">
           {frequency ? `${frequency} Hz` : "--"}
         </div>
 
-        <div className="text-lg mb-4">
-          {note === "--" ? (
-            <span className="text-gray-500">Escuchando...</span>
-          ) : Math.abs(diff) < 1 ? (
-            <span className="text-green-600">Afinado ✔</span>
-          ) : diff > 0 ? (
-            <span className="text-red-600">Muy agudo ↑</span>
+        <TunerNeedle diff={diff} />
+
+        <div className="mt-6">
+          {!isRunning ? (
+            <Button
+              onClick={startTuner}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Iniciar afinador
+            </Button>
           ) : (
-            <span className="text-blue-600">Muy grave ↓</span>
+            <Button variant="outline" onClick={stopTuner}>
+              Detener
+            </Button>
           )}
         </div>
-
-        {!isRunning ? (
-          <Button onClick={startTuner}>Iniciar afinador</Button>
-        ) : (
-          <Button variant="outline" onClick={stopTuner}>
-            Detener
-          </Button>
-        )}
       </CardContent>
     </Card>
   );
