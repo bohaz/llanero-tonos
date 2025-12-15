@@ -38,7 +38,7 @@ export default function LlaneroTonosApp() {
           animate={{ opacity: 1, y: 0 }}
           className="text-4xl font-bold text-center mb-8 tracking-tight"
         >
-          🎵 <span className="text-emerald-400">Llanero</span>Tonos
+          🎵 <span className="text-emerald-400">Afin</span>Arpa
           <span className="text-zinc-500 text-lg ml-2">(beta)</span>
         </motion.h1>
 
