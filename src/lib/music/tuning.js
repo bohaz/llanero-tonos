@@ -1,4 +1,4 @@
-import { CHROMATIC_NOTES } from "./notes";
+import { CHROMATIC_NOTES } from "./chromaticNotes";
 
 export function normalizeFrequency(freq) {
   while (freq > 520) freq /= 2;

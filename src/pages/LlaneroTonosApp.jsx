@@ -4,6 +4,7 @@ import { useSongs } from "@/hooks/useSongs";
 import SongForm from "@/components/songs/SongForm";
 import ToneTabs from "@/components/tones/ToneTabs";
 import Tuner from "@/components/Tuner";
+import HarpTransport from "@/components/transport/HarpTransport";
 
 const TONOS = [
   "DO", "DOm", "RE", "REm", "MI", "MIm", "FA", "FAm",
@@ -54,6 +55,7 @@ export default function LlaneroTonosApp() {
             <TabsTrigger value="mayores">Mayores</TabsTrigger>
             <TabsTrigger value="menores">Menores</TabsTrigger>
             <TabsTrigger value="afinador">Afinador</TabsTrigger>
+            <TabsTrigger value="transporte">Transporte</TabsTrigger>
           </TabsList>
 
           <TabsContent value="mayores">
@@ -80,6 +82,9 @@ export default function LlaneroTonosApp() {
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
               <Tuner />
             </div>
+          </TabsContent>
+          <TabsContent value="transporte">
+            <HarpTransport />
           </TabsContent>
         </Tabs>
       </div>
