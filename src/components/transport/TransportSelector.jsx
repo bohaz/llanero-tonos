@@ -14,7 +14,7 @@ export default function TransportSelector({
     <Card className="bg-neutral-900 border-neutral-800">
       <CardContent className="p-6 text-white space-y-4">
         <h2 className="text-2xl font-bold text-center">
-          🪕 Transporte de Arpa Llanera
+          Transporte de Arpa Llanera
         </h2>
 
         <div className="text-sm text-neutral-400 text-center">
