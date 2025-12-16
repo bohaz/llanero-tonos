@@ -3,8 +3,29 @@ import { useState, useEffect } from "react";
 const STORAGE_KEY = "llanero_tonos_songs";
 
 const DEFAULT_SONGS = [
-  { id: 1, title: "Flor del Llano", artist: "Ángel Ávila", tono: "RE" },
-  { id: 2, title: "Contemplando mi Casita", artist: "Ángel Ávila", tono: "RE" },
+  // FA
+  { id: 1, title: "Cruel desilusión", artist: "Nelson Morales", tono: "FA" },
+  { id: 2, title: "Implorando tu perdón", artist: "Nelson Morales", tono: "FA" },
+
+  // DO
+  { id: 3, title: "Llano adentro", artist: "Nelson Morales", tono: "DO" },
+  { id: 4, title: "Brisas de mata fraile", artist: "Eneas Perdomo", tono: "DO" },
+
+  // SOL
+  { id: 5, title: "Morena Carmen Dolores", artist: "José Ali", tono: "SOL" },
+  { id: 6, title: "Laguna vieja", artist: "Reynaldo Armas", tono: "SOL" },
+
+  // RE
+  { id: 7, title: "Flor del llano", artist: "Angel Avila", tono: "RE" },
+  { id: 8, title: "Contemplando mi casita", artist: "Angel Avila", tono: "RE" },
+
+  // LA
+  { id: 9, title: "Corazón no llores más", artist: "Angel Avila", tono: "LA" },
+  { id: 10, title: "El juego del amor", artist: "Reynaldo Armas", tono: "LA" },
+
+  // MI
+  { id: 11, title: "Luna del capanaparo", artist: "José Ali Nieves", tono: "MI" },
+  { id: 12, title: "A usted", artist: "Reynaldo Armas", tono: "MI" },
 ];
 
 export function useSongs() {
