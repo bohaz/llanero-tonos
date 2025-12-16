@@ -5,6 +5,8 @@ import SongForm from "@/components/songs/SongForm";
 import ToneTabs from "@/components/tones/ToneTabs";
 import Tuner from "@/components/Tuner";
 import HarpTransport from "@/components/transport/HarpTransport";
+import ArpegiosLogo from "@/assets/Arpegios-logo.png";
+
 
 const TONOS = [
   "DO", "DOm", "RE", "REm", "MI", "MIm", "FA", "FAm",
@@ -33,14 +35,24 @@ export default function LlaneroTonosApp() {
       <div className="max-w-5xl mx-auto">
 
         {/* Título */}
-        <motion.h1
+       <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold text-center mb-8 tracking-tight"
+          className="flex flex-col items-center mb-8"
         >
-          🎵 <span className="text-emerald-400">Afin</span>Arpa
-          <span className="text-zinc-500 text-lg ml-2">(beta)</span>
-        </motion.h1>
+          <img
+            src={ArpegiosLogo}
+            alt="Arpegios logo"
+            className="w-20 h-20 mb-3"
+          />
+
+          <h1 className="text-4xl font-bold tracking-tight">
+            <span className="text-white">Arpe</span>
+            <span className="text-emerald-400">gios</span>
+            <span className="text-zinc-500 text-lg ml-2">(beta)</span>
+          </h1>
+        </motion.div>
+
 
         {/* Formulario */}
         <SongForm

@@ -14,11 +14,10 @@ export default function TransportSelector({
     <Card className="bg-neutral-900 border-neutral-800">
       <CardContent className="p-6 text-white space-y-4">
         <h2 className="text-2xl font-bold text-center">
-          Transporte de Arpa Llanera
+          Escala de transporte
         </h2>
 
         <div className="text-sm text-neutral-400 text-center">
-          Escala de transporte <br />
           <span className="text-white font-semibold">
             FA → DO → SOL → RE → LA → MI → SI
           </span>

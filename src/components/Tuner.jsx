@@ -9,9 +9,7 @@ export default function Tuner() {
   return (
     <Card className="max-w-md mx-auto bg-neutral-900 border-neutral-800">
       <CardContent className="p-6 text-center text-white">
-        <h2 className="text-2xl font-bold mb-4">
-          🎧 Afinador Arpa Llanera
-        </h2>
+        
 
         <div className="text-6xl font-bold mb-1">{note}</div>
 
