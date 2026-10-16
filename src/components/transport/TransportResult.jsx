@@ -1,47 +1,37 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
-export default function TransportResult({ result }) {
+export default function TransportResult({ steps }) {
   return (
-    <Card className="bg-neutral-900 border-neutral-800">
+    <Card className="border-neutral-800 bg-neutral-900">
       <CardContent className="p-6 text-white">
-        <h3 className="text-xl font-bold mb-4">
-          🔧 Ajustes de cuerdas
-        </h3>
+        <h3 className="mb-4 text-xl font-bold">🔧 Ajustes de cuerdas</h3>
 
-        <div className="space-y-3">
-          {result.map((r) => (
-            <div
-              key={r.string}
-              className="flex items-center justify-between bg-neutral-800 rounded px-4 py-3"
-            >
-              <div>
-                <p className="font-semibold text-lg">
-                  Cuerda {r.string}
-                </p>
-                <p className="text-sm text-neutral-400">
-                  → {r.target}
-                </p>
-              </div>
-
-              <div
-                className={`font-semibold ${
-                  r.instruction === "No se mueve"
-                    ? "text-neutral-400"
-                    : r.instruction.includes("½")
-                    ? "text-yellow-400"
-                    : "text-green-400"
-                }`}
+        {steps.length === 0 ? (
+          <p className="text-neutral-400">
+            Ya estás en ese tono: no hay que mover ninguna cuerda.
+          </p>
+        ) : (
+          <ol className="space-y-3">
+            {steps.map((step, index) => (
+              <li
+                key={`${index}-${step.string}`}
+                className="flex items-center justify-between rounded bg-neutral-800 px-4 py-3"
               >
-                {r.instruction}
-              </div>
-            </div>
-          ))}
-        </div>
+                <div>
+                  <p className="text-lg font-semibold">Cuerda {step.string}</p>
+                  <p className="text-sm text-neutral-400">→ {step.target}</p>
+                </div>
+                <span className="font-semibold text-yellow-400">
+                  {step.instruction}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
 
-        <p className="text-sm text-neutral-400 mt-4">
-          💡 Consejo: afina una cuerda a la vez y vuelve a revisar
-          las anteriores.
+        <p className="mt-4 text-sm text-neutral-400">
+          💡 Consejo: afina una cuerda a la vez y vuelve a revisar las
+          anteriores.
         </p>
       </CardContent>
     </Card>

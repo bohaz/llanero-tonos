@@ -6,7 +6,7 @@ import { calculateTransport } from "@/lib/music/transport";
 export default function HarpTransport() {
   const [from, setFrom] = useState("RE");
   const [to, setTo] = useState("LA");
-  const [result, setResult] = useState(null);
+  const [steps, setSteps] = useState(null);
 
   return (
     <div className="space-y-6">
@@ -15,12 +15,10 @@ export default function HarpTransport() {
         to={to}
         onChangeFrom={setFrom}
         onChangeTo={setTo}
-        onCalculate={() =>
-          setResult(calculateTransport(from, to))
-        }
+        onCalculate={() => setSteps(calculateTransport(from, to))}
       />
 
-      {result && <TransportResult result={result} />}
+      {steps && <TransportResult steps={steps} />}
     </div>
   );
 }

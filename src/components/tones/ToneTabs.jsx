@@ -1,27 +1,23 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import SongList from "../songs/SongList";
+import { songsInKey } from "@/lib/songs";
+import SongList from "@/components/songs/SongList";
 
-export default function ToneTabs({
-  tones,
-  songs,
-  onEdit,
-  onDelete,
-  defaultTone,
-}) {
+/** One tab per key, each listing the songs in that key. */
+export default function ToneTabs({ tones, songs, onEdit, onDelete }) {
   return (
-    <Tabs defaultValue={defaultTone}>
+    <Tabs defaultValue={tones[0]}>
       <TabsList className="flex flex-wrap">
-        {tones.map((t) => (
-          <TabsTrigger key={t} value={t}>
-            {t}
+        {tones.map((tone) => (
+          <TabsTrigger key={tone} value={tone}>
+            {tone}
           </TabsTrigger>
         ))}
       </TabsList>
 
-      {tones.map((t) => (
-        <TabsContent key={t} value={t}>
+      {tones.map((tone) => (
+        <TabsContent key={tone} value={tone}>
           <SongList
-            songs={songs.filter((s) => s.tono === t)}
+            songs={songsInKey(songs, tone)}
             onEdit={onEdit}
             onDelete={onDelete}
           />
