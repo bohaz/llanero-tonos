@@ -2,11 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme tokens used by the shadcn/ui components in src/components/ui.
+ * Values are HSL channels so Tailwind can apply opacity (e.g. bg-primary/90).
+ * The palette follows the app: zinc surfaces with emerald accents.
+ */
 :root {
   --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  --foreground: 240 10% 3.9%;
+  --card: 240 5.9% 10%;
+  --card-foreground: 0 0% 98%;
+  --primary: 160 84% 39%;
+  --primary-foreground: 240 10% 3.9%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 25%;
+  --ring: 160 84% 39%;
+}
+
+* {
+  @apply border-border;
 }
 
 body {
-  @apply bg-background text-foreground;
+  @apply bg-zinc-950 text-zinc-100;
 }

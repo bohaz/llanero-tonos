@@ -1,7 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { TRANSPORT_KEYS } from "@/lib/music/transport";
 
-const NATURAL_KEYS = ["FA", "DO", "SOL", "RE", "LA", "MI", "SI"];
+function KeySelect({ id, label, value, onChange }) {
+  return (
+    <div>
+      <label htmlFor={id} className="text-sm text-neutral-400">
+        {label}
+      </label>
+      <select
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1 w-full rounded border border-neutral-700 bg-neutral-800 p-2"
+      >
+        {TRANSPORT_KEYS.map((key) => (
+          <option key={key} value={key}>
+            {key}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 export default function TransportSelector({
   from,
@@ -11,44 +32,27 @@ export default function TransportSelector({
   onCalculate,
 }) {
   return (
-    <Card className="bg-neutral-900 border-neutral-800">
-      <CardContent className="p-6 text-white space-y-4">
-        <h2 className="text-2xl font-bold text-center">
-          Escala de transporte
-        </h2>
+    <Card className="border-neutral-800 bg-neutral-900">
+      <CardContent className="space-y-4 p-6 text-white">
+        <h2 className="text-center text-2xl font-bold">Escala de transporte</h2>
 
-        <div className="text-sm text-neutral-400 text-center">
-          <span className="text-white font-semibold">
-            FA → DO → SOL → RE → LA → MI → SI
-          </span>
-        </div>
+        <p className="text-center text-sm font-semibold">
+          {TRANSPORT_KEYS.join(" → ")}
+        </p>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm text-neutral-400">Tono actual</label>
-            <select
-              value={from}
-              onChange={(e) => onChangeFrom(e.target.value)}
-              className="w-full bg-neutral-800 border border-neutral-700 rounded p-2 mt-1"
-            >
-              {NATURAL_KEYS.map((k) => (
-                <option key={k} value={k}>{k}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-sm text-neutral-400">Transportar a</label>
-            <select
-              value={to}
-              onChange={(e) => onChangeTo(e.target.value)}
-              className="w-full bg-neutral-800 border border-neutral-700 rounded p-2 mt-1"
-            >
-              {NATURAL_KEYS.map((k) => (
-                <option key={k} value={k}>{k}</option>
-              ))}
-            </select>
-          </div>
+          <KeySelect
+            id="transport-from"
+            label="Tono actual"
+            value={from}
+            onChange={onChangeFrom}
+          />
+          <KeySelect
+            id="transport-to"
+            label="Transportar a"
+            value={to}
+            onChange={onChangeTo}
+          />
         </div>
 
         <Button className="w-full" onClick={onCalculate}>
