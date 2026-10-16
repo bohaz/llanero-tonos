@@ -1,121 +1,112 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PitchDetector } from "pitchy";
-import { normalizeFrequency, findClosestNote } from "@/lib/music/tuning";
+import {
+  TUNER_SETTINGS,
+  average,
+  findClosestNote,
+  isUsableReading,
+  normalizeFrequency,
+  pushReading,
+} from "@/lib/music/tuning";
 
-const CLARITY_THRESHOLD = 0.85;
-const SMOOTHING_SIZE = 8;
-const UPDATE_INTERVAL = 120;
+const FFT_SIZE = 2048;
 
+const INITIAL_READING = { note: "--", frequency: null, diff: null };
+
+/**
+ * Listens to the microphone and reports the closest note.
+ * The microphone is released when the tuner stops or the component unmounts.
+ */
 export function useTuner() {
   const [running, setRunning] = useState(false);
-  const [note, setNote] = useState("--");
-  const [frequency, setFrequency] = useState(null);
-  const [diff, setDiff] = useState(null);
+  const [error, setError] = useState(null);
+  const [reading, setReading] = useState(INITIAL_READING);
 
-  const audioContextRef = useRef(null);
-  const analyserRef = useRef(null);
-  const detectorRef = useRef(null);
-  const bufferRef = useRef(null);
-  const rafRef = useRef(null);
+  // Audio objects live in a ref: they change every frame and must not re-render.
+  const audio = useRef(null);
 
-  const historyRef = useRef([]);
-  const lastUpdateRef = useRef(0);
+  const stop = useCallback(() => {
+    const current = audio.current;
+    audio.current = null;
 
-  const start = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-      },
-    });
-
-    const audioContext = new AudioContext();
-    await audioContext.resume();
-
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-
-    const source = audioContext.createMediaStreamSource(stream);
-    source.connect(analyser);
-
-    const buffer = new Float32Array(analyser.fftSize);
-    const detector = PitchDetector.forFloat32Array(analyser.fftSize);
-
-    audioContextRef.current = audioContext;
-    analyserRef.current = analyser;
-    bufferRef.current = buffer;
-    detectorRef.current = detector;
-
-    historyRef.current = [];
-    lastUpdateRef.current = 0;
-
-    setRunning(true);
-    rafRef.current = requestAnimationFrame(loop);
-  };
-
-  const loop = (now) => {
-    const analyser = analyserRef.current;
-    const buffer = bufferRef.current;
-    const detector = detectorRef.current;
-    const audioContext = audioContextRef.current;
-
-    if (!analyser || !buffer || !detector || !audioContext) return;
-
-    analyser.getFloatTimeDomainData(buffer);
-
-    const [freq, clarity] = detector.findPitch(
-      buffer,
-      audioContext.sampleRate
-    );
-
-    if (now - lastUpdateRef.current > UPDATE_INTERVAL) {
-      lastUpdateRef.current = now;
-
-      if (clarity > CLARITY_THRESHOLD && freq > 50 && freq < 1200) {
-        const normalized = normalizeFrequency(freq);
-
-        historyRef.current.push(normalized);
-        if (historyRef.current.length > SMOOTHING_SIZE) {
-          historyRef.current.shift();
-        }
-
-        const avg =
-          historyRef.current.reduce((a, b) => a + b, 0) /
-          historyRef.current.length;
-
-        const result = findClosestNote(avg);
-
-        setFrequency(avg.toFixed(1));
-        setNote(result.note);
-        setDiff(result.diff);
-      }
+    if (current) {
+      cancelAnimationFrame(current.frame);
+      current.stream.getTracks().forEach((track) => track.stop());
+      current.context.close();
     }
 
-    rafRef.current = requestAnimationFrame(loop);
-  };
-
-  const stop = () => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    audioContextRef.current?.close();
-
-    historyRef.current = [];
     setRunning(false);
-    setNote("--");
-    setFrequency(null);
-    setDiff(null);
-  };
-
-  useEffect(() => {
-    return () => stop();
+    setReading(INITIAL_READING);
   }, []);
 
-  return {
-    running,
-    note,
-    frequency,
-    diff,
-    start,
-    stop,
-  };
+  const start = useCallback(async () => {
+    if (audio.current) return;
+    setError(null);
+
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      });
+    } catch {
+      setError(
+        "No se pudo acceder al micrófono. Revisa los permisos del navegador.",
+      );
+      return;
+    }
+
+    const context = new AudioContext();
+    await context.resume();
+
+    const analyser = context.createAnalyser();
+    analyser.fftSize = FFT_SIZE;
+    context.createMediaStreamSource(stream).connect(analyser);
+
+    const state = {
+      stream,
+      context,
+      analyser,
+      buffer: new Float32Array(FFT_SIZE),
+      detector: PitchDetector.forFloat32Array(FFT_SIZE),
+      history: [],
+      lastUpdate: 0,
+      frame: null,
+    };
+
+    const tick = (now) => {
+      if (audio.current !== state) return;
+
+      state.analyser.getFloatTimeDomainData(state.buffer);
+      const [freq, clarity] = state.detector.findPitch(
+        state.buffer,
+        state.context.sampleRate,
+      );
+
+      const dueForUpdate =
+        now - state.lastUpdate > TUNER_SETTINGS.updateInterval;
+
+      if (dueForUpdate && isUsableReading(freq, clarity)) {
+        state.lastUpdate = now;
+        state.history = pushReading(state.history, normalizeFrequency(freq));
+
+        const smoothed = average(state.history);
+        const { note, diff } = findClosestNote(smoothed);
+        setReading({ note, frequency: smoothed, diff });
+      }
+
+      state.frame = requestAnimationFrame(tick);
+    };
+
+    audio.current = state;
+    setRunning(true);
+    state.frame = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(() => stop, [stop]);
+
+  return { running, error, ...reading, start, stop };
 }

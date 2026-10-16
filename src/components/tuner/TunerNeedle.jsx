@@ -1,14 +1,12 @@
-export default function TunerNeedle({ diff }) {
-  const rotation = diff
-    ? Math.max(-45, Math.min(45, diff * 3))
-    : 0;
+import { needleRotation } from "@/lib/music/tuning";
 
+export default function TunerNeedle({ diff }) {
   return (
-    <div className="relative h-24 mb-4">
+    <div className="relative mb-4 h-24" aria-hidden="true">
       <div
-        className="absolute left-1/2 top-1/2 w-1 h-16 bg-white origin-bottom"
+        className="absolute left-1/2 top-1/2 h-16 w-1 origin-bottom bg-white"
         style={{
-          transform: `translateX(-50%) rotate(${rotation}deg)`,
+          transform: `translateX(-50%) rotate(${needleRotation(diff)}deg)`,
           transition: "transform 0.15s ease-out",
         }}
       />
